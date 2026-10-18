@@ -63,9 +63,7 @@
           Mulai Mengerjakan TTS 🚀
         </button>
 
-        <div class="reg-footer-links">
-          <button type="button" class="text-link" onclick="openSettingsModal()">⚙️ Pengaturan Spreadsheet</button>
-        </div>
+
       </form>
     </div>
   </div>
@@ -282,52 +280,14 @@
         <button type="button" class="btn-secondary" onclick="downloadResultText()">
           💾 Unduh Rapor (TXT)
         </button>
-        <button type="button" class="btn-outline" onclick="toggleReviewAnswers()">
-          🔍 Lihat Pembahasan Jawaban
-        </button>
+
       </div>
 
-      <!-- Review Section -->
-      <div id="reviewContainer" class="review-container hidden">
-        <h3 class="review-title">Evaluasi Kunci Jawaban (20 Soal)</h3>
-        <div id="reviewList" class="review-list">
-          <!-- Filled by JS -->
-        </div>
-      </div>
+
     </div>
   </div>
 
-  <!-- MODAL PENGATURAN GOOGLE SHEETS -->
-  <div id="settingsModal" class="modal-overlay">
-    <div class="modal-card clean-card">
-      <div class="modal-header">
-        <h3>⚙️ Pengaturan Integrasi Spreadsheet</h3>
-        <button type="button" class="modal-close" onclick="closeSettingsModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <p class="settings-desc">
-          Masukkan URL Web App dari <strong>Google Apps Script</strong> yang sudah Anda buat di Google Spreadsheet agar nilai otomatis terekam:
-        </p>
-        <div class="form-group">
-          <label for="appsScriptUrlInput">URL Google Apps Script (/exec):</label>
-          <input type="url" id="appsScriptUrlInput" class="form-input" value="https://script.google.com/macros/s/AKfycbz_SMbfZ4nt5EULetWOTOJYdnAgC-FTY-w8vcbfJsN1euiVnMsxkxKjahNCn9TcqlnX1g/exec" placeholder="https://script.google.com/macros/s/.../exec">
-        </div>
-        <div class="settings-helper-box">
-          <p><strong>💡 Panduan Singkat:</strong></p>
-          <ol>
-            <li>Buka file <code>google_apps_script.js</code> di folder proyek ini.</li>
-            <li>Salin isinya ke Google Sheets &gt; Ekstensi &gt; Apps Script.</li>
-            <li>Deploy sebagai Web App dengan akses "Anyone" (Siapa saja).</li>
-            <li>Tempel URL Web App ke kolom di atas.</li>
-          </ol>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeSettingsModal()">Batal</button>
-        <button type="button" class="btn-primary" onclick="saveSettings()">Simpan URL</button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Audio Context Synthesizer & Scripts -->
   <script src="tts_data.js"></script>

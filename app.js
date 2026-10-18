@@ -106,12 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initGridSystem();
   renderClueLists();
   setupAntiCheatListeners();
-
-  // Load saved settings if any
-  const urlInput = document.getElementById("appsScriptUrlInput");
-  if (urlInput && state.spreadsheetUrl) {
-    urlInput.value = state.spreadsheetUrl;
-  }
 });
 
 function startExam() {
@@ -966,12 +960,7 @@ function renderReviewList(reviews) {
     .join("");
 }
 
-function toggleReviewAnswers() {
-  const reviewContainer = document.getElementById("reviewContainer");
-  if (reviewContainer) {
-    reviewContainer.classList.toggle("hidden");
-  }
-}
+
 
 /* ==========================================================
    GOOGLE SPREADSHEET EXPORT INTEGRATION
@@ -1068,27 +1057,3 @@ function downloadResultText() {
   a.click();
 }
 
-/* ==========================================================
-   SETTINGS MODAL
-   ========================================================== */
-function openSettingsModal() {
-  const urlInput = document.getElementById("appsScriptUrlInput");
-  if (urlInput) {
-    urlInput.value = state.spreadsheetUrl;
-  }
-  document.getElementById("settingsModal").classList.add("active");
-}
-
-function closeSettingsModal() {
-  document.getElementById("settingsModal").classList.remove("active");
-}
-
-function saveSettings() {
-  const urlInput = document.getElementById("appsScriptUrlInput");
-  if (urlInput) {
-    state.spreadsheetUrl = urlInput.value.trim();
-    localStorage.setItem("tts_spreadsheet_url", state.spreadsheetUrl);
-    alert("URL Google Apps Script berhasil disimpan!");
-  }
-  closeSettingsModal();
-}
