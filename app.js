@@ -56,29 +56,56 @@ function getAudioContext() {
   return state.antiCheat.audioContext;
 }
 
-// Play single siren beep or continuous alarm
-function playSirenTone(duration = 0.5) {
+// Shocking Emergency Alert & Klaxon Synthesizer
+function playAlarmBurst() {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
+    const now = ctx.currentTime;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    // 1. Shock Impact (Sub-bass thump to startle the user)
+    const kickOsc = ctx.createOscillator();
+    const kickGain = ctx.createGain();
+    kickOsc.type = "sine";
+    kickOsc.frequency.setValueAtTime(180, now);
+    kickOsc.frequency.exponentialRampToValueAtTime(42, now + 0.3);
+    kickGain.gain.setValueAtTime(0.7, now);
+    kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    kickOsc.connect(kickGain);
+    kickGain.connect(ctx.destination);
+    kickOsc.start(now);
+    kickOsc.stop(now + 0.32);
 
-    osc.type = "sawtooth";
-    // Modulate pitch between 750Hz and 1250Hz for alarming siren effect
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + duration * 0.5);
-    osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + duration);
+    // 2. High-urgency piercing klaxon tones (Dual square + sawtooth)
+    const playBeep = (timeOffset, duration, f1 = 980, f2 = 1470) => {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const toneGain = ctx.createGain();
 
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      osc1.type = "square";
+      osc2.type = "sawtooth";
+      osc1.frequency.setValueAtTime(f1, now + timeOffset);
+      osc2.frequency.setValueAtTime(f2, now + timeOffset);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+      // Fast, piercing attack & release
+      toneGain.gain.setValueAtTime(0.55, now + timeOffset);
+      toneGain.gain.setValueAtTime(0.55, now + timeOffset + duration - 0.02);
+      toneGain.gain.exponentialRampToValueAtTime(0.01, now + timeOffset + duration);
 
-    osc.start();
-    osc.stop(ctx.currentTime + duration);
+      osc1.connect(toneGain);
+      osc2.connect(toneGain);
+      toneGain.connect(ctx.destination);
+
+      osc1.start(now + timeOffset);
+      osc2.start(now + timeOffset);
+      osc1.stop(now + timeOffset + duration);
+      osc2.stop(now + timeOffset + duration);
+    };
+
+    // Staccato alarm pattern: BEEP - BEEP - BEEEEEP (Urgent Alert)
+    playBeep(0, 0.12, 1050, 1575);
+    playBeep(0.16, 0.12, 1050, 1575);
+    playBeep(0.32, 0.28, 1200, 1800);
   } catch (e) {
     console.warn("Audio Context error:", e);
   }
@@ -86,10 +113,11 @@ function playSirenTone(duration = 0.5) {
 
 function startAlarmSound() {
   stopAlarmSound();
-  playSirenTone(0.6);
+  playAlarmBurst();
+  // Repeat emergency alert burst every 750ms while alarm is active
   state.antiCheat.sirenInterval = setInterval(() => {
-    playSirenTone(0.6);
-  }, 700);
+    playAlarmBurst();
+  }, 750);
 }
 
 function stopAlarmSound() {
@@ -461,6 +489,15 @@ function focusCell(r, c) {
     cell.input.focus();
     cell.input.select();
   }
+
+  // Smoothly ensure cell is visible within the viewport (never clipped)
+  if (cell.element) {
+    cell.element.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest"
+    });
+  }
 }
 
 function toggleCurrentDirection() {
@@ -805,11 +842,16 @@ function resetZoom() {
 }
 
 function applyZoom() {
+  const baseSize = window.innerWidth <= 480 ? 28 : window.innerWidth <= 900 ? 32 : 36;
+  const currentSize = Math.max(22, Math.min(52, Math.round(baseSize * state.grid.zoom)));
+  document.documentElement.style.setProperty("--cell-size", `${currentSize}px`);
+
   const gridEl = document.getElementById("ttsGrid");
-  const zoomText = document.getElementById("zoomLevelText");
   if (gridEl) {
-    gridEl.style.transform = `scale(${state.grid.zoom})`;
+    gridEl.style.transform = "none";
   }
+
+  const zoomText = document.getElementById("zoomLevelText");
   if (zoomText) {
     zoomText.textContent = `${Math.round(state.grid.zoom * 100)}%`;
   }
