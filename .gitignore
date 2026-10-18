@@ -1,7 +1,14 @@
-# Python cache
+# Python scripts (internal tools, not needed for web)
 __pycache__/
 *.pyc
 *.pyo
+scratch_solver.py
+verify_layout.py
+check_connectivity.py
+tts_data.json
+
+# ⚠️ Private WhatsApp chat logs - DO NOT PUBLISH
+Konteks/
 
 # IDE & Editor
 .vscode/
