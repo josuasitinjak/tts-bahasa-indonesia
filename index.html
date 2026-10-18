@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+  <title>TTS Bahasa Indonesia - SMA Negeri 1 Batam (Kelas XI HJ 5)</title>
+  <meta name="description" content="Platform Teka Teki Silang interaktif Bahasa Indonesia Kelas XI HJ 5 SMA Negeri 1 Batam dengan sistem pengawasan integritas ujian anti-cheat dan rekap nilai otomatis Google Spreadsheet.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background decorative soft glow -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- SCREEN 1: MODAL REGISTRASI & IDENTITAS (LIGHT & CLEAN) -->
+  <div id="registrationScreen" class="screen-view active">
+    <div class="reg-container clean-card">
+      <div class="reg-header">
+        <div class="badge-tag">SMA NEGERI 1 BATAM • KELAS XI HJ 5</div>
+        <h1 class="reg-title">📰 TTS Bahasa Indonesia</h1>
+        <p class="reg-subtitle">Ujian Teka-Teki Silang Interaktif & Pembelajaran Mandiri</p>
+      </div>
+
+      <form id="regForm" class="reg-form" onsubmit="event.preventDefault(); startExam();">
+        <div class="form-group">
+          <label for="studentName">Nama Lengkap Peserta <span class="req">*</span></label>
+          <input type="text" id="studentName" class="form-input" placeholder="Masukkan nama lengkap Anda..." required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="studentAbsen">Nomor Absen <span class="req">*</span></label>
+          <input type="number" id="studentAbsen" class="form-input" placeholder="Contoh: 15" min="1" max="50" required>
+        </div>
+
+        <!-- Anti-Cheat Info Banner -->
+        <div class="anticheat-banner">
+          <div class="banner-icon">🛡️</div>
+          <div class="banner-content">
+            <h4>Tata Tertib & Pengawasan Kejujuran:</h4>
+            <ul>
+              <li><strong>Dilarang keluar tab</strong> atau membuka jendela/aplikasi lain selama ujian.</li>
+              <li>Jika terdeteksi keluar tab/layar, <strong>alarm peringatan nyaring</strong> akan berbunyi dan nilai dipotong <strong>-5 poin per pelanggaran</strong>.</li>
+              <li>Waktu pengerjaan dan rekam jejak pelanggaran akan otomatis tersimpan ke sistem rekap nilai.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="agreeRules" required>
+            <span>Saya berjanji akan mengerjakan TTS ini dengan jujur dan bersedia menerima pengurangan poin jika meninggalkan halaman ujian.</span>
+          </label>
+        </div>
+
+        <button type="submit" id="btnStart" class="btn-primary btn-block">
+          Mulai Mengerjakan TTS 🚀
+        </button>
+
+        <div class="reg-footer-links">
+          <button type="button" class="text-link" onclick="openSettingsModal()">⚙️ Pengaturan Spreadsheet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: ARENA TTS UTAMA (LIGHT & CLEAN) -->
+  <div id="gameScreen" class="screen-view">
+    
+    <!-- Top Bar -->
+    <header class="app-header clean-card">
+      <div class="header-left">
+        <div class="brand-pill">
+          <span class="brand-icon">📰</span>
+          <span class="brand-text">TTS B. INDO</span>
+          <span class="brand-sub">XI HJ 5</span>
+        </div>
+        <div class="participant-pill" id="participantDisplay">
+          <span class="p-name" id="displayStudentName">Siswa</span>
+          <span class="p-meta" id="displayStudentMeta">Absen: - • SMAN 1 Batam</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Live Timer -->
+        <div class="timer-pill" id="timerBadge">
+          <span class="timer-icon">⏱️</span>
+          <span id="timerText" class="timer-value">00:00</span>
+        </div>
+
+        <!-- Cheat Counter Badge -->
+        <div class="cheat-pill" id="cheatBadge" title="Jumlah Pelanggaran Integritas">
+          <span class="cheat-icon">🛡️</span>
+          <span id="cheatText">0 Pelanggaran (-0 Poin)</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Zoom Controls -->
+        <div class="zoom-btn-group">
+          <button type="button" class="btn-icon" onclick="adjustZoom(-0.1)" title="Zoom Out">−</button>
+          <span id="zoomLevelText" class="zoom-text">100%</span>
+          <button type="button" class="btn-icon" onclick="adjustZoom(0.1)" title="Zoom In">+</button>
+          <button type="button" class="btn-icon" onclick="resetZoom()" title="Reset Tampilan">↺</button>
+        </div>
+
+        <button type="button" class="btn-icon" onclick="toggleFullscreen()" title="Layar Penuh (Fullscreen)">⛶</button>
+        <button type="button" class="btn-finish" onclick="confirmSubmit()">Selesai & Kumpul 📤</button>
+      </div>
+    </header>
+
+    <!-- Sticky Active Clue Bar -->
+    <div class="active-clue-bar clean-card" id="activeClueBar">
+      <div class="clue-bar-header">
+        <div class="clue-tag-wrap">
+          <span id="activeWordNumTag" class="badge-num">1</span>
+          <span id="activeDirectionTag" class="badge-dir">MENDATAR</span>
+          <span id="activeLettersTag" class="badge-len">6 Huruf</span>
+          <span id="activeLevelTag" class="badge-level level-mudah">Mudah</span>
+        </div>
+        <div class="clue-bar-controls">
+          <button type="button" class="btn-pill" onclick="prevWord()">◀ Sebelumnya</button>
+          <button type="button" class="btn-pill btn-pill-accent" onclick="toggleCurrentDirection()">🔄 Ganti Arah</button>
+          <button type="button" class="btn-pill" onclick="nextWord()">Berikutnya ▶</button>
+        </div>
+      </div>
+      <div class="clue-bar-text" id="activeClueText">
+        Pilih kotak pada TTS atau klik salah satu soal dari daftar untuk mulai menjawab.
+      </div>
+    </div>
+
+    <!-- Main Workspace (Grid + Sidebar Panel) -->
+    <main class="game-layout">
+      <!-- Grid Area -->
+      <section class="grid-section clean-card" id="gridSection">
+        <div class="grid-viewport" id="gridViewport">
+          <div class="tts-grid" id="ttsGrid">
+            <!-- Rendered by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Mobile Floating Control Bar -->
+        <div class="mobile-actions-bar">
+          <button type="button" class="mob-btn" onclick="prevWord()">◀ Sblm</button>
+          <button type="button" class="mob-btn mob-btn-accent" onclick="toggleCurrentDirection()">🔄 Arah</button>
+          <button type="button" class="mob-btn" onclick="clearCurrentCell()">⌫ Hapus</button>
+          <button type="button" class="mob-btn" onclick="nextWord()">Lanjut ▶</button>
+        </div>
+      </section>
+
+      <!-- Sidebar Clues Panel -->
+      <aside class="sidebar-section clean-card" id="sidebarSection">
+        <div class="panel-tabs">
+          <button type="button" class="tab-btn active" id="tabAcrossBtn" onclick="switchClueTab('across')">
+            Mendatar (1-10) <span class="tab-badge" id="acrossFilledBadge">0/10</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabDownBtn" onclick="switchClueTab('down')">
+            Menurun (11-20) <span class="tab-badge" id="downFilledBadge">0/10</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabLogsBtn" onclick="switchClueTab('logs')">
+            Log Ujian <span class="tab-badge red-badge" id="logsCountBadge">0</span>
+          </button>
+        </div>
+
+        <div class="clues-scroll-area" id="cluesScrollArea">
+          <!-- Across List -->
+          <div id="acrossList" class="clue-list active">
+            <!-- JS dynamic content -->
+          </div>
+
+          <!-- Down List -->
+          <div id="downList" class="clue-list">
+            <!-- JS dynamic content -->
+          </div>
+
+          <!-- Logs List -->
+          <div id="logsList" class="clue-list">
+            <div class="log-intro">Riwayat aktivitas pengawasan ujian Anda:</div>
+            <div id="logItemsContainer" class="log-container">
+              <div class="empty-log-state">Belum ada pelanggaran yang tercatat. Ujian berjalan jujur! 🌟</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Footer Summary -->
+        <div class="sidebar-footer">
+          <div class="progress-stats">
+            <span class="stat-label">Progres Jawaban:</span>
+            <span class="stat-value" id="progressText">0 / 20 Soal (0%)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+  </div>
+
+  <!-- SCREEN 3: ALARM OVERLAY (ANTI-CHEAT) -->
+  <div id="alarmOverlay" class="alarm-overlay">
+    <div class="alarm-modal clean-card">
+      <div class="alarm-siren">🚨</div>
+      <h2 class="alarm-title">PERINGATAN PELANGGARAN!</h2>
+      <p class="alarm-desc">
+        Anda terdeteksi <strong>meninggalkan jendela ujian / membuka tab lain</strong>!
+      </p>
+      
+      <div class="alarm-details-box">
+        <div class="alarm-stat">
+          <span class="alarm-stat-label">Pelanggaran Ke:</span>
+          <span class="alarm-stat-val" id="overlayCheatCount">1</span>
+        </div>
+        <div class="alarm-stat">
+          <span class="alarm-stat-label">Pengurangan Skor:</span>
+          <span class="alarm-stat-val text-red" id="overlayPenalty">-5 Poin</span>
+        </div>
+      </div>
+
+      <p class="alarm-warning-note">
+        Seluruh rekaman waktu perpindahan tab tersimpan ke sistem rekap nilai Google Sheets guru. Tetaplah berada di halaman ini hingga selesai.
+      </p>
+
+      <button type="button" class="btn-alarm-resume" onclick="dismissAlarm()">
+        Saya Mengerti & Kembali Mengerjakan
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: HASIL AKHIR & REKAP NILAI MODAL -->
+  <div id="resultModal" class="modal-overlay">
+    <div class="modal-card clean-card result-card">
+      <div class="result-header">
+        <div class="result-badge-kkm" id="kkmBadge">TUNTAS ✅</div>
+        <h2 class="result-title">Hasil Ujian Teka-Teki Silang</h2>
+        <p class="result-subtitle" id="resultStudentInfo">Evan Satria • Absen: 12 • SMAN 1 Batam (XI HJ 5)</p>
+      </div>
+
+      <!-- Scoreboard Highlights -->
+      <div class="scoreboard-grid">
+        <div class="score-card score-main">
+          <span class="score-label">NILAI AKHIR</span>
+          <span class="score-val" id="finalScoreVal">85</span>
+          <span class="score-sub">Skala 100</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Skor Murni</span>
+          <span class="score-val text-emerald" id="rawScoreVal">90</span>
+          <span class="score-sub">Jawaban Benar</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Penalti Contek</span>
+          <span class="score-val text-red" id="penaltyVal">-5</span>
+          <span class="score-sub" id="cheatCountResult">1x Pelanggaran</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Durasi Kerja</span>
+          <span class="score-val" id="durationResult">08:14</span>
+          <span class="score-sub">Menit : Detik</span>
+        </div>
+      </div>
+
+      <!-- Spreadsheet Status Notification -->
+      <div class="sheet-sync-status" id="sheetSyncStatus">
+        <div class="sync-spinner" id="syncSpinner"></div>
+        <div class="sync-info" id="syncInfoText">
+          Mengirim data rekap nilai ke Google Spreadsheet...
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="result-actions">
+        <button type="button" class="btn-primary" onclick="copyResultSummary()">
+          📋 Salin Rapor Nilai
+        </button>
+        <button type="button" class="btn-secondary" onclick="downloadResultText()">
+          💾 Unduh Rapor (TXT)
+        </button>
+        <button type="button" class="btn-outline" onclick="toggleReviewAnswers()">
+          🔍 Lihat Pembahasan Jawaban
+        </button>
+      </div>
+
+      <!-- Review Section -->
+      <div id="reviewContainer" class="review-container hidden">
+        <h3 class="review-title">Evaluasi Kunci Jawaban (20 Soal)</h3>
+        <div id="reviewList" class="review-list">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN GOOGLE SHEETS -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card clean-card">
+      <div class="modal-header">
+        <h3>⚙️ Pengaturan Integrasi Spreadsheet</h3>
+        <button type="button" class="modal-close" onclick="closeSettingsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="settings-desc">
+          Masukkan URL Web App dari <strong>Google Apps Script</strong> yang sudah Anda buat di Google Spreadsheet agar nilai otomatis terekam:
+        </p>
+        <div class="form-group">
+          <label for="appsScriptUrlInput">URL Google Apps Script (/exec):</label>
+          <input type="url" id="appsScriptUrlInput" class="form-input" value="https://script.google.com/macros/s/AKfycbz_SMbfZ4nt5EULetWOTOJYdnAgC-FTY-w8vcbfJsN1euiVnMsxkxKjahNCn9TcqlnX1g/exec" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="settings-helper-box">
+          <p><strong>💡 Panduan Singkat:</strong></p>
+          <ol>
+            <li>Buka file <code>google_apps_script.js</code> di folder proyek ini.</li>
+            <li>Salin isinya ke Google Sheets &gt; Ekstensi &gt; Apps Script.</li>
+            <li>Deploy sebagai Web App dengan akses "Anyone" (Siapa saja).</li>
+            <li>Tempel URL Web App ke kolom di atas.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeSettingsModal()">Batal</button>
+        <button type="button" class="btn-primary" onclick="saveSettings()">Simpan URL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Context Synthesizer & Scripts -->
+  <script src="tts_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
